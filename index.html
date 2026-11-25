@@ -143,27 +143,35 @@ table.matrix{border-collapse:separate;border-spacing:0;width:100%;min-width:900p
 .minitrack i.c.done{background:var(--cls)}
 .minitrack i.c.active{background:color-mix(in srgb,var(--cls) 50%,transparent)}
 
-/* board diagram */
+/* board diagram (flow style) */
 .bwrap{overflow-x:auto;padding-bottom:4px}
-.bcanvas{position:relative;width:100%;min-width:860px;aspect-ratio:1080/610}
+.bcanvas{position:relative;width:100%;min-width:880px;aspect-ratio:1080/640}
 .bcanvas svg{position:absolute;inset:0;width:100%;height:100%}
-.bedge{stroke:var(--ink);stroke-width:2.2;fill:none;vector-effect:non-scaling-stroke}
-.arrowhead{fill:var(--ink)}
+.bedge{stroke:var(--line);stroke-width:3;fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.bedge.two{stroke-dasharray:2 6}
+.bedge.on{stroke:var(--ink)}
+.bedge.flow{stroke:var(--ink);stroke-dasharray:7 7;animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-28}}
+.arrowhead{fill:var(--muted)}
 .czone{fill:var(--cls-soft);stroke:color-mix(in srgb,var(--cls) 40%,transparent);stroke-dasharray:6 5;vector-effect:non-scaling-stroke}
-.bnode{position:absolute;transform:translate(-50%,-50%);min-height:52px;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 10px;text-align:center;display:grid;gap:3px;justify-items:center;align-content:center;font-size:13.5px;line-height:1.25}
-.bnode:hover{border-color:var(--ink)}
-.bnode b{font-family:var(--f-display);font-weight:700}
-.bnode.h{border-style:dashed;border-color:var(--hyb);background:var(--hyb-soft)}
-.bnode.c{border-color:var(--cls);background:var(--cls-soft)}
-.bnode.sel{box-shadow:0 0 0 4px color-mix(in srgb,var(--ink) 35%,transparent);border-color:var(--ink)}
-.bnode.st-done{background:var(--ink);border-color:var(--ink);color:#fff}
-.bnode.st-done .pill{background:rgba(255,255,255,.18);color:#fff}
-.bnode.c.st-done{background:var(--cls);border-color:var(--cls)}
-.bnode.st-active{border-width:2.5px;border-color:var(--ink);box-shadow:0 0 0 4px var(--ink-soft)}
-.bnode.c.st-active{border-color:var(--cls);box-shadow:0 0 0 4px var(--cls-soft)}
-.bnode.st-active.sel,.bnode.st-done.sel{box-shadow:0 0 0 4px color-mix(in srgb,var(--fg) 30%,transparent)}
-.bnode .stx{font-size:11.5px;font-weight:600;opacity:.85}
-.brow-lab{position:absolute;right:0;transform:translateY(-50%);display:flex;gap:8px;align-items:center;width:10%;font-size:12.5px;color:var(--ink)}
+.czone-lab{position:absolute;font-size:12px;font-weight:700;color:var(--cls);transform:translate(-50%,-50%)}
+.bnode{position:absolute;transform:translate(-50%,-19px);width:17%;border:0;background:transparent;padding:0;display:grid;gap:4px;justify-items:center;text-align:center;color:var(--muted);font-size:13px;line-height:1.25}
+.bnode b{font-family:var(--f-display);font-weight:600;color:var(--fg)}
+.bdot{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--line);background:var(--surface);display:grid;place-items:center;font-size:13px;font-weight:800;color:var(--muted);transition:transform .15s}
+.bnode:hover .bdot{border-color:var(--ink)}
+.bnode.h .bdot{border-style:dashed;border-color:var(--hyb);color:var(--hyb)}
+.bnode.c .bdot{border-color:var(--cls);color:var(--cls)}
+.bnode.st-done .bdot{background:var(--ink);border-color:var(--ink);border-style:solid;color:#fff}
+.bnode.c.st-done .bdot{background:var(--cls);border-color:var(--cls)}
+.bnode.st-active .bdot{border-color:var(--ink);border-style:solid;color:var(--ink);box-shadow:0 0 0 5px var(--ink-soft)}
+.bnode.c.st-active .bdot{border-color:var(--cls);color:var(--cls);box-shadow:0 0 0 5px color-mix(in srgb,var(--cls) 20%,transparent)}
+.bnode.sel .bdot{transform:scale(1.18)}
+.bnode.sel b{color:var(--ink);font-weight:800}
+.bnode .pill{font-size:11px;padding:1px 7px}
+.bnode .stx{font-size:11.5px}
+.bdeps{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
+.bdep{font-size:11px;border:1px dashed var(--muted);border-radius:6px;padding:0 5px;color:var(--muted);white-space:nowrap}
+.brow-lab{position:absolute;right:0;transform:translateY(-50%);display:flex;gap:8px;align-items:center;width:11%;font-size:12.5px;color:var(--ink)}
 .brow-lab .circ{flex:0 0 auto;display:grid;place-items:center;width:28px;height:28px;border:2px solid var(--ink);border-radius:50%;font-family:var(--f-display);font-weight:800}
 .brow-lab b{display:block;font-family:var(--f-display);line-height:1.2}
 .brow-lab small{display:block;color:var(--muted);font-size:11px;line-height:1.2}
@@ -569,28 +577,38 @@ function renderBlocks(){
   $("#fp").onchange=e=>{filt.phase=e.target.value;draw();};
 }
 
-/* ---------- לוח המתודה: פריסה כמו על הלוח (3 רמות, פיצולים והתכנסות) ---------- */
-const BW=1080, BH=610, NW=190, NH=58;
-const LAYOUT={s0a:[800,62],s0b:[560,62],s0c:[320,62],
-  s1a:[800,192],s1b:[560,192],s1c:[320,192],s1d:[600,302],
-  s2a:[820,412],s2b:[400,412],s3a:[400,540],s3b:[160,540]};
+/* ---------- לוח המתודה: פריסה כמו על הלוח (3 רמות, פיצולים והתכנסות) בסגנון ציר זרימה ---------- */
+const BW=1080, BH=640, DR=19;
+const LAYOUT={s0a:[800,48],s0b:[560,48],s0c:[320,48],
+  s1a:[800,188],s1b:[560,188],s1c:[320,188],s1d:[620,300],
+  s2a:[860,420],s2b:[400,420],s3a:[400,555],s3b:[160,555]};
 const EDGES=[["s0a","s0b"],["s0b","s0c"],["s1a","s1b"],["s1b","s1c"],["s1a","s1d"],["s1d","s2b"],["s2a","s2b"],["s1c","s2b",true],["s2b","s3a"],["s3a","s3b"]];
-const ROWS=[[0,62,"0"],[1,192,"1"],[2,412,"2"],[3,540,"3"]];
-function posOf(s,i){if(LAYOUT[s.id])return LAYOUT[s.id];const row=DB.stages.filter(x=>x.phase===s.phase);const k=row.indexOf(s);const y=(ROWS.find(r=>r[0]===s.phase)||[0,62+s.phase*130])[1];return [800-k*240,y];}
-function clip(a,b){const dx=b[0]-a[0],dy=b[1]-a[1];const hw=NW/2+6,hh=NH/2+6;const t=Math.min(dx?hw/Math.abs(dx):Infinity,dy?hh/Math.abs(dy):Infinity);return [a[0]+dx*t,a[1]+dy*t];}
+const ROWS=[[0,48,"0"],[1,188,"1"],[2,420,"2"],[3,555,"3"]];
+function posOf(s){if(LAYOUT[s.id])return LAYOUT[s.id];const row=DB.stages.filter(x=>x.phase===s.phase);const k=row.indexOf(s);const y=(ROWS.find(r=>r[0]===s.phase)||[0,48+s.phase*130])[1];return [800-k*240,y];}
+function shorten(a,b,r){const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1;return [a[0]+dx/L*r,a[1]+dy/L*r];}
+function extDeps(s){return (s.deps||[]).filter(x=>!stageById(x));}
 function boardHTML(opts){
-  const P={};DB.stages.forEach((s,i)=>P[s.id]=posOf(s,i));
-  const lines=EDGES.filter(([a,b])=>P[a]&&P[b]).map(([a,b,two])=>{const p=clip(P[a],P[b]),q=clip(P[b],P[a]);
-    return `<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" class="bedge" marker-end="url(#ah)" ${two?'marker-start="url(#ah)"':""}/>`;}).join("");
+  const P={};DB.stages.forEach(s=>P[s.id]=posOf(s));
+  const stOf=id=>opts.statusOf?opts.statusOf(id):"";
+  const lines=EDGES.filter(([a,b])=>P[a]&&P[b]).map(([a,b,two])=>{
+    const down=P[b][1]-P[a][1]>50;const src=down?[P[a][0],P[a][1]+DR+52]:P[a];const p=down?src:shorten(P[a],P[b],DR+5),q=shorten(P[b],src,DR+5),m=[(p[0]+q[0])/2,(p[1]+q[1])/2];
+    const sa=stOf(a),sb=stOf(b);let cls="";
+    if(sa==="done"&&sb==="done")cls="on";else if(sa==="done"&&sb==="active")cls="flow";
+    return two?`<path d="M${p[0]},${p[1]} L${q[0]},${q[1]}" class="bedge two ${cls}" marker-start="url(#ah)" marker-end="url(#ah)"/>`
+              :`<path d="M${p[0]},${p[1]} L${m[0]},${m[1]} L${q[0]},${q[1]}" class="bedge ${cls}" marker-mid="url(#ah)"/>`;}).join("");
   const rows=ROWS.map(([n,y,lab])=>{const p=DB.phases.find(x=>x.n===n);if(!p)return "";
     return `<div class="brow-lab" style="top:${y/BH*100}%"><span class="circ">${lab}</span><span><b>${esc(p.name)}</b><small>${esc(p.sub||"")}</small></span></div>`;}).join("");
-  const nodes=DB.stages.map(s=>{const [x,y]=P[s.id];const extra=opts.extra?opts.extra(s):"";const st=opts.status?opts.status(s):"";
-    return `<button class="bnode ${s.cls} ${st} ${s.id===opts.sel?"sel":""}" data-s="${s.id}" style="left:${x/BW*100}%;top:${y/BH*100}%;width:${NW/BW*100}%"><b>${esc(s.name)}</b>${extra}</button>`;}).join("");
+  const nodes=DB.stages.map((s,i)=>{const [x,y]=P[s.id];const st=stOf(s.id);const ext=extDeps(s);
+    return `<button class="bnode ${s.cls} ${st?"st-"+st:""} ${s.id===opts.sel?"sel":""}" data-s="${s.id}" style="left:${x/BW*100}%;top:${y/BH*100}%">
+      <span class="bdot num">${st==="done"?"✓":i+1}</span><b>${esc(s.name)}</b>${opts.extra?opts.extra(s):""}
+      ${ext.length?`<span class="bdeps">${ext.map(d=>`<span class="bdep">⟵ ${esc(d)}</span>`).join("")}</span>`:""}</button>`;}).join("");
   return `<div class="bwrap"><div class="bcanvas">
-    <svg viewBox="0 0 ${BW} ${BH}" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"/></marker></defs>
-    <rect x="40" y="478" width="${BW-170}" height="118" rx="14" class="czone"/>${lines}</svg>
-    <div class="bnote" style="left:${80/BW*100}%;top:${40/BH*100}%">להבין את העולם<br>(איפה אני חי)</div>
-    ${rows}${nodes}</div></div>`;
+    <svg viewBox="0 0 ${BW} ${BH}" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 z" class="arrowhead"/></marker></defs>
+    <rect x="70" y="500" width="${BW-200}" height="132" rx="16" class="czone"/>${lines}</svg>
+    <div class="bnote" style="left:${90/BW*100}%;top:${50/BH*100}%">להבין את העולם<br>(איפה אני חי)</div>
+    <div class="czone-lab" style="left:${90/BW*100}%;top:${515/BH*100}%">רשת סגולה בלבד</div>
+    ${rows}${nodes}</div></div>
+    <div class="legend" style="margin-top:8px"><span><span class="bdep">⟵ תלות חיצונית</span> גורם שהשלב תלוי בו</span><span>↔ לולאה בין פתרון להיתכנות</span></div>`;
 }
 function bindBoard(fn){document.querySelectorAll(".bnode").forEach(n=>n.onclick=()=>fn(n.dataset.s));}
 
@@ -647,7 +665,7 @@ function renderBlock(id){
   </section>
   <section class="panel">
     <div class="panel-head"><h2>מסלול אבן הבניין</h2><div class="legend"><span><i class="cell done"></i>הושלם</span><span><i class="cell active"></i>בעבודה</span><span><i class="cell"></i>טרם התחיל</span><span><i class="cell cls"></i>מסווג</span></div></div>
-    ${boardHTML({sel:sid,status:x=>"st-"+b.stages[x.id].status,extra:x=>`<span class="stx">${({done:"הושלם",active:"בעבודה",todo:"טרם התחיל"})[b.stages[x.id].status]}</span>`})}
+    ${boardHTML({sel:sid,statusOf:k=>b.stages[k].status,extra:x=>`<span class="stx">${({done:"הושלם",active:"בעבודה",todo:"טרם התחיל"})[b.stages[x.id].status]}</span>`})}
   </section>
   <section class="two">
     <div class="panel stage-panel" id="stagePanel"></div>
