@@ -1,0 +1,699 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מסלול אבני בניין</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Assistant:wght@400;600;700&display=swap">
+<style>
+/* Layout: מסלול אופקי מימין לשמאל כמו על הלוח — שורות שלב 0/1/2/3, חיצים בין התחנות. כחול טוש-לוח כצבע מוביל, סגול = הרשת הסגולה (מסווג). */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --surface-2:#eaeef4; --line:#d5dce6;
+  --fg:#16202e; --muted:#5b6778; --ink:#1f4fb4; --ink-soft:#e3ebfb;
+  --unc:#11806a; --unc-soft:#dff3ee;
+  --hyb:#b26a00; --hyb-soft:#fbefdc;
+  --cls:#6b35b8; --cls-soft:#eee5fa;
+  --ok:#1d7f43; --warn:#b26a00; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --f-display:"Heebo","Assistant",Arial,sans-serif;
+  --f-body:"Assistant","Heebo",Arial,sans-serif;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --surface:#171e29; --surface-2:#1e2734; --line:#2c3746;
+  --fg:#e6ebf2; --muted:#98a4b5; --ink:#7ea6ff; --ink-soft:#1c2a47;
+  --unc:#4fc7a9; --unc-soft:#123229; --hyb:#f0aa4a; --hyb-soft:#33260f;
+  --cls:#b591f2; --cls-soft:#2a1f40; --ok:#5ccf8a; --warn:#f0aa4a; --bad:#ff8a80; --bad-soft:#3a1c1a;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --surface:#171e29; --surface-2:#1e2734; --line:#2c3746;
+  --fg:#e6ebf2; --muted:#98a4b5; --ink:#7ea6ff; --ink-soft:#1c2a47;
+  --unc:#4fc7a9; --unc-soft:#123229; --hyb:#f0aa4a; --hyb-soft:#33260f;
+  --cls:#b591f2; --cls-soft:#2a1f40; --ok:#5ccf8a; --warn:#f0aa4a; --bad:#ff8a80; --bad-soft:#3a1c1a;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html,body{direction:rtl}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+a{color:var(--ink)}
+.num{font-variant-numeric:tabular-nums}
+
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar-in{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding-block:10px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1280px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;color:var(--ink);font-size:10px}
+.brand h1{font-size:18px;font-weight:800}
+.brand small{display:block;color:var(--muted);font-size:12px;line-height:1.2}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs a{text-decoration:none;color:var(--muted);padding:6px 12px;border-radius:8px;font-weight:600}
+nav.tabs a.on{background:var(--ink-soft);color:var(--ink)}
+.top-actions{margin-inline-start:auto;display:flex;gap:8px;flex-wrap:wrap}
+.cls-banner{background:var(--unc-soft);color:var(--unc);font-size:13px;font-weight:600;text-align:center;padding:5px 16px}
+
+main{max-width:1280px;margin:0 auto;padding-block:20px 60px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:20px}
+.sample-note{font-size:13px;color:var(--muted)}
+
+.btn{border:1px solid var(--line);background:var(--surface);padding:6px 12px;border-radius:8px;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.ghost{background:transparent}
+.btn.sm{padding:3px 9px;font-size:13px}
+.btn.danger{color:var(--bad)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0}
+.panel h2{font-size:17px;font-weight:700;margin-bottom:12px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.panel-head h2{margin:0}
+
+/* KPI row */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.kpi .v{font-family:var(--f-display);font-size:30px;font-weight:800;line-height:1.1}
+.kpi .l{color:var(--muted);font-size:13px}
+.kpi.alert .v{color:var(--bad)}
+
+/* funnel */
+.funnel{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.fstep{border-radius:8px;padding:10px 12px;background:var(--surface-2);position:relative}
+.fstep .n{font-family:var(--f-display);font-weight:800;font-size:24px}
+.fstep .t{font-size:13px;color:var(--muted)}
+.fstep.c{background:var(--cls-soft)}
+.fstep.c .n{color:var(--cls)}
+@media (max-width:640px){.funnel{grid-template-columns:repeat(2,1fr)}}
+
+/* matrix */
+.matrix-wrap{overflow-x:auto}
+table.matrix{border-collapse:separate;border-spacing:0;width:100%;min-width:900px}
+.matrix th,.matrix td{padding:6px 4px;text-align:center;border-bottom:1px solid var(--line)}
+.matrix thead th{font-size:11.5px;font-weight:600;color:var(--muted);vertical-align:bottom;line-height:1.25}
+.matrix thead tr.ph th{font-family:var(--f-display);font-size:12px;color:var(--fg);border-bottom:2px solid var(--line)}
+.matrix th.c,.matrix thead tr.ph th.c{color:var(--cls)}
+.matrix td.name{text-align:right;min-width:210px}
+.matrix td.name a{font-weight:700;text-decoration:none;color:var(--fg)}
+.matrix td.name a:hover{color:var(--ink)}
+.matrix td.name small{display:block;color:var(--muted);font-size:12px}
+.matrix .sep{border-inline-start:2px solid var(--line)}
+.cell{width:22px;height:22px;border-radius:5px;margin:auto;border:1.5px solid var(--line);background:transparent}
+.cell.active{border-color:var(--ink);background:var(--ink-soft);box-shadow:0 0 0 3px var(--ink-soft)}
+.cell.done{background:var(--ink);border-color:var(--ink)}
+.cell.cls{border-color:color-mix(in srgb,var(--cls) 45%,transparent)}
+.cell.cls.done{background:repeating-linear-gradient(45deg,var(--cls) 0 4px,color-mix(in srgb,var(--cls) 70%,transparent) 4px 8px);border-color:var(--cls)}
+.cell.cls.active{border-color:var(--cls);background:var(--cls-soft);box-shadow:0 0 0 3px var(--cls-soft)}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.pill.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.pill.bad{color:var(--bad);background:var(--bad-soft)}
+.pill.u{color:var(--unc);background:var(--unc-soft)}
+.pill.h{color:var(--hyb);background:var(--hyb-soft)}
+.pill.c{color:var(--cls);background:var(--cls-soft)}
+.pill.plain::before{display:none}
+.stale{color:var(--bad);font-weight:700}
+
+.two{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px}
+@media (max-width:900px){.two{grid-template-columns:1fr}}
+
+.feed{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.feed li{display:grid;gap:2px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.feed li:last-child{border-bottom:0}
+.feed .meta{font-size:12.5px;color:var(--muted)}
+.feed .meta b{color:var(--fg)}
+
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);align-items:center}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend .cell{margin:0;width:16px;height:16px}
+
+/* blocks grid */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toolbar input,.toolbar select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.bcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:grid;gap:10px;text-decoration:none;color:var(--fg)}
+.bcard:hover{border-color:var(--ink)}
+.bcard h3{font-size:16px}
+.bcard .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+.minitrack{display:flex;gap:3px}
+.minitrack i{flex:1;height:6px;border-radius:3px;background:var(--surface-2)}
+.minitrack i.done{background:var(--ink)}
+.minitrack i.active{background:color-mix(in srgb,var(--ink) 45%,transparent)}
+.minitrack i.c{background:var(--cls-soft)}
+.minitrack i.c.done{background:var(--cls)}
+.minitrack i.c.active{background:color-mix(in srgb,var(--cls) 50%,transparent)}
+
+/* method board */
+.board{display:grid;gap:14px}
+.brow{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center}
+.brow .ph{font-family:var(--f-display);font-weight:800;color:var(--ink)}
+.brow .ph .circ{display:inline-grid;place-items:center;width:30px;height:30px;border:2px solid var(--ink);border-radius:50%;margin-inline-end:6px}
+.brow .ph small{display:block;color:var(--muted);font-weight:500;font-family:var(--f-body);font-size:12px}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.node{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;text-align:right;min-width:150px;display:grid;gap:3px}
+.node:hover{border-color:var(--ink)}
+.node.sel{border-color:var(--ink);box-shadow:0 0 0 3px var(--ink-soft)}
+.node b{font-family:var(--f-display);font-size:14.5px}
+.node.c{border-color:color-mix(in srgb,var(--cls) 50%,transparent);background:var(--cls-soft)}
+.node.h{border-style:dashed;border-color:var(--hyb)}
+.arrow{color:var(--ink);font-size:20px;font-weight:700;padding:0 2px}
+@media (max-width:640px){.brow{grid-template-columns:1fr}}
+
+.def{display:grid;gap:14px}
+.def h3{font-size:14px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.def ul{margin:0;padding-inline-start:20px}
+.draft-tag{font-size:12px;color:var(--hyb);font-weight:700}
+.editable{border:1px dashed transparent;border-radius:6px;padding:2px 4px;margin:-2px -4px}
+.editable:hover{border-color:var(--line)}
+textarea.edit{width:100%;min-height:90px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px}
+
+/* block page */
+.bhead{display:grid;gap:10px}
+.bhead .crumb{font-size:13px;color:var(--muted)}
+.bhead .crumb a{text-decoration:none}
+.bhead h2{font-size:26px;font-weight:800}
+.meta-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:14px;color:var(--muted)}
+.meta-row select{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:2px 6px}
+.trl{display:inline-flex;gap:2px;vertical-align:middle}
+.trl i{width:8px;height:14px;border-radius:2px;background:var(--surface-2)}
+.trl i.on{background:var(--ink)}
+
+.stepper{display:flex;gap:0;overflow-x:auto;padding-bottom:4px}
+.step{flex:1 0 108px;border:0;background:transparent;padding:8px 6px 6px;text-align:center;display:grid;gap:5px;justify-items:center;position:relative;color:var(--muted);font-size:12.5px;line-height:1.25}
+.step .dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;font-size:12px;font-weight:800;z-index:1}
+.step::after{content:"";position:absolute;top:20px;right:50%;width:100%;height:2px;background:var(--line);z-index:0}
+.step:last-child::after{display:none}
+.step.done .dot{background:var(--ink);border-color:var(--ink);color:#fff}
+.step.active .dot{border-color:var(--ink);color:var(--ink);box-shadow:0 0 0 4px var(--ink-soft)}
+.step.c .dot{border-color:var(--cls);color:var(--cls)}
+.step.c.done .dot{background:var(--cls);color:#fff}
+.step.sel{color:var(--fg);font-weight:700}
+.step.sel .dot{transform:scale(1.15)}
+
+.stage-panel{display:grid;gap:16px}
+.stage-panel .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:800px){.stage-panel .grid2{grid-template-columns:1fr}}
+.field label{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.field textarea,.field input,.field select{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px}
+.field textarea{min-height:110px;resize:vertical}
+.checks{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.checks label{display:flex;gap:8px;align-items:flex-start;font-weight:500;color:var(--fg);font-size:14px}
+.checks input{margin-top:4px;width:auto}
+.mats{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.mats li{display:flex;gap:8px;align-items:center;background:var(--surface-2);border-radius:8px;padding:6px 10px;font-size:14px}
+.mats li .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.mats .kind{font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.addrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.addrow input,.addrow select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px;min-width:0;flex:1}
+.addrow select{flex:0 0 auto}
+
+.purple-box{border:2px solid var(--cls);background:var(--cls-soft);border-radius:var(--radius);padding:16px;display:grid;gap:12px}
+.purple-box h3{color:var(--cls);font-size:16px}
+.purple-box p{margin:0}
+.purple-box .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.hybrid-note{border:1.5px dashed var(--hyb);background:var(--hyb-soft);border-radius:8px;padding:10px 12px;font-size:14px}
+
+.modal-bg{position:fixed;inset:0;background:rgba(10,15,25,.45);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--surface);border-radius:12px;padding:20px;width:min(560px,100%);max-height:90vh;overflow:auto;display:grid;gap:12px}
+.modal h2{font-size:18px}
+.modal .actions{display:flex;gap:8px;justify-content:flex-start}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:8px;font-weight:600;z-index:60}
+.muted{color:var(--muted)}
+.empty{color:var(--muted);font-size:14px;padding:8px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head><body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">CTO</div>
+      <div><h1>מסלול אבני בניין</h1><small>צוות CTO · מנהלת תוכנית החלל</small></div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <a href="#dashboard" data-v="dashboard">תמונת מצב</a>
+      <a href="#blocks" data-v="blocks">אבני בניין</a>
+      <a href="#method" data-v="method">המתודה</a>
+    </nav>
+    <div class="top-actions">
+      <button class="btn primary" id="btnNew">+ אבן בניין חדשה</button>
+      <button class="btn ghost" id="btnData">ייבוא / ייצוא</button>
+    </div>
+  </div>
+  <div class="cls-banner">מערכת בלמ"ס · אין להזין מידע מסווג. שלבים מסווגים מסומנים בסגול ומפנים לרשת הסגולה בלבד.</div>
+</header>
+<main id="app"></main>
+<div id="modalRoot"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* הגדרות חיבור. כשהן ריקות המערכת עובדת במצב מקומי (נתונים בדפדפן בלבד). מפתח ה-anon ציבורי מטבעו; ההגנה היא RLS במסד. */
+window.APP_CONFIG = { SUPABASE_URL: "", SUPABASE_ANON_KEY: "" };
+</script>
+<script>
+(function(){
+"use strict";
+const LS_KEY = "cto-blocks-db-v1";
+const TODAY = new Date();
+const STALE_DAYS = 14;
+
+/* ---------- ברירת מחדל: הגדרת המתודה (ניתנת לעריכה במסך "המתודה") ---------- */
+const DEFAULT_PHASES = [
+  {n:0, name:"הבנת העולם", sub:"להבין את העולם שבו אנחנו חיים"},
+  {n:1, name:"הבנה פיזיקלית ומבצעית", sub:"מה הפיזיקה מאפשרת ולמה זה חשוב"},
+  {n:2, name:"חיבור למציאות", sub:"מי יכול לבנות את זה ובאיזה מחיר"},
+  {n:3, name:"הבשלה לפרויקט", sub:"המלצה למנהלת והתנעה"}
+];
+const D = "הצעה ראשונית, להשלמה מול יואש";
+const DEFAULT_STAGES = [
+  {id:"s0a", phase:0, name:"הבנה ברמה טכנולוגית", cls:"u", draft:true,
+   question:"מהי הטכנולוגיה, איך היא עובדת ומה מצב הבשלות שלה (TRL)?",
+   deliverable:"דף הסבר טכנולוגי בפורמט אחיד (עד 2 עמודים): עקרון פעולה, רכיבים, TRL, מילון מונחים.",
+   criteria:["הסבר מובן לקורא שאינו מומחה","הערכת TRL מנומקת","רשימת מקורות פתוחים"],
+   approvals:["אמיר"], deps:["מקורות פתוחים, מאמרים, כנסים"]},
+  {id:"s0b", phase:0, name:"מה קורה בעולם", cls:"u", draft:true,
+   question:"מי מפתח את זה בעולם, מה כבר שוגר ומה המגמות?",
+   deliverable:"סקירת מצב עולמית: שחקנים מובילים, מערכות שהוכחו בחלל, מגמות ומחירים.",
+   criteria:["לפחות 5 שחקנים ממופים","טבלת השוואה","תאריך עדכון"],
+   approvals:["אמיר"], deps:["אוסינט, דוחות שוק"]},
+  {id:"s0c", phase:0, name:"מה אפשר לעשות עם זה", cls:"u", draft:true,
+   question:"אילו יכולות הטכנולוגיה פותחת, ברמה הרעיונית?",
+   deliverable:"רשימת שימושים אפשריים (use cases) ברמה תפיסתית, עם דירוג ראשוני.",
+   criteria:["לפחות 3 שימושים","דירוג פוטנציאל"],
+   approvals:["יואש"], deps:[]},
+  {id:"s1a", phase:1, name:"הבנה פיזיקלית", cls:"u", draft:true,
+   question:"מה הגבולות הפיזיקליים ומה צווארי הבקבוק?",
+   deliverable:"מסמך עקרונות פיזיקליים: משוואות שולטות, גבולות תיאורטיים, הנחות.",
+   criteria:["גבולות מוגדרים במספרים","הנחות מפורשות"],
+   approvals:["אמיר"], deps:["s0a"]},
+  {id:"s1b", phase:1, name:"משמעות מבצעית", cls:"h", draft:true,
+   question:"איזה פער מבצעי זה סוגר? (החלק הפנים-צה\"לי ברשת הסגולה)",
+   deliverable:"בבלמ\"ס: ניתוח תפיסתי ואוסינטי של הצורך. ברשת הסגולה: מיפוי מול צרכי צה\"ל.",
+   criteria:["ניתוח תפיסתי בבלמ\"ס","מסמך פנימי קיים ברשת הסגולה"],
+   approvals:["יואש"], deps:["s0c","גורמי צה\"ל (ברשת הסגולה)"]},
+  {id:"s1c", phase:1, name:"פתרון פוטנציאלי", cls:"u", draft:true,
+   question:"איך נראה פתרון אפשרי, ברמת ארכיטקטורה?",
+   deliverable:"תרשים ארכיטקטורה ותיאור קונספט פתרון, עם חלופות.",
+   criteria:["לפחות 2 חלופות","תרשים"],
+   approvals:["אמיר","יואש"], deps:["s1a","s1b"]},
+  {id:"s1d", phase:1, name:"חישובים", cls:"u", draft:true,
+   question:"האם המספרים מסתדרים? (תקציב הספק, מסה, קישור וכו')",
+   deliverable:"גיליון חישובים מתועד עם הנחות ותוצאות.",
+   criteria:["חישוב משוחזר על ידי אדם נוסף","הנחות מתועדות"],
+   approvals:["אמיר"], deps:["s1a"]},
+  {id:"s2a", phase:2, name:"חיבור למציאות: חברות ואקוסיסטם", cls:"u", draft:true,
+   question:"אילו חברות, אקדמיה ומשקיעים יכולים לממש את זה?",
+   deliverable:"מפת אקוסיסטם: חברות, יכולות, שלב, פגישות שנערכו וסיכומן.",
+   criteria:["לפחות 3 גורמים ממופים","סיכום פגישה לכל גורם"],
+   approvals:["יואש"], deps:["חברות ושותפים חיצוניים"]},
+  {id:"s2b", phase:2, name:"בדיקת היתכנות פרמטרית וסימולציות", cls:"u", draft:true,
+   question:"באילו פרמטרים הפתרון עובד, ומה המחיר והלו\"ז?",
+   deliverable:"דוח היתכנות: מרחב פרמטרים, תוצאות סימולציה, עלות ולו\"ז משוערים.",
+   criteria:["סימולציה מתועדת","הערכת עלות","הערכת לו\"ז"],
+   approvals:["אמיר","יואש"], deps:["s1c","s1d","s2a"]},
+  {id:"s3a", phase:3, name:"המלצות ומסקנות", cls:"c", draft:true,
+   question:"מה ממליצים למנהלת? (נכתב במלואו ברשת הסגולה)",
+   deliverable:"מסמך המלצה למנהלת ברשת הסגולה. כאן נשמרים רק סטטוס ותאריכים.",
+   criteria:["מסמך הוגש ברשת הסגולה"],
+   approvals:["יואש","ראש המנהלת"], deps:["s2b"]},
+  {id:"s3b", phase:3, name:"פרויקט", cls:"c", draft:true,
+   question:"הפרויקט הותנע וקיבל מימון. (פרטים ברשת הסגולה בלבד)",
+   deliverable:"אין תוכן בבלמ\"ס. סטטוס בלבד.",
+   criteria:["קיים תיק פרויקט ברשת הסגולה"],
+   approvals:["ראש המנהלת"], deps:["s3a"]}
+];
+const CLS_LABEL = {u:"בלמ\"ס", h:"היברידי", c:"מסווג · רשת סגולה"};
+const PEOPLE = ["יואש","אמיר","מעיין","עמרי","עמית","יהלי"];
+const HEALTH = {ok:["בתנועה","ok"], risk:["בסיכון","warn"], stuck:["תקוע","bad"]};
+
+/* ---------- נתוני דוגמה פיקטיביים ---------- */
+function d(daysAgo){const x=new Date(TODAY);x.setDate(x.getDate()-daysAgo);return x.toISOString().slice(0,10);}
+function sampleBlocks(){
+  const mk=(id,name,domain,owner,trl,health,summary,doneUpTo,activeIds,logs,extra)=>{
+    const st={};
+    DEFAULT_STAGES.forEach((s,i)=>{
+      const doneIdx = DEFAULT_STAGES.findIndex(z=>z.id===doneUpTo);
+      let status = i<=doneIdx ? "done" : (activeIds.includes(s.id)?"active":"todo");
+      st[s.id]={status,notes:"",materials:[],checks:{},approvals:{},updated:"",purple:{exists:false,updated:"",by:""},osint:""};
+      if(status==="done"){s.criteria.forEach((_,k)=>st[s.id].checks[k]=true);s.approvals.forEach((_,k)=>st[s.id].approvals[k]=true);}
+    });
+    Object.entries(extra||{}).forEach(([k,v])=>Object.assign(st[k],v));
+    return {id,name,domain,owner,trl,health,summary,created:d(120),stages:st,log:logs};
+  };
+  return [
+    mk("oisl","תקשורת לייזר בין-לוויינית","תקשורת","אמיר",5,"ok",
+      "קישורים אופטיים בין לוויינים בקונסטלציה, לקצב נתונים גבוה בלי תלות בתחנות קרקע.",
+      "s2a",["s2b"],
+      [{date:d(3),by:"אמיר",stage:"s2b",text:"הרצנו סימולציית קישור ראשונה. מרווח הספק חיובי עד 4,000 ק\"מ."},
+       {date:d(11),by:"מעיין",stage:"s2a",text:"סיכום פגישה עם \"אורביט-לייט\" (חברה פיקטיבית): יש להם מסוף בדגם הנדסי."}],
+      {s0a:{notes:"עקרון: אפנון אופטי בלייזר 1550nm, הצבעה ועקיבה מדויקת (PAT).",materials:[{title:"דף הסבר טכנולוגי, גרסה 2",kind:"מסמך",link:""}]},
+       s1b:{osint:"מקורות פתוחים מראים מעבר עולמי לקונסטלציות עם קישורים אופטיים.",purple:{exists:true,updated:d(30),by:"יואש"}},
+       s2a:{materials:[{title:"מפת אקוסיסטם תקשורת אופטית",kind:"גיליון",link:""},{title:"סיכום פגישה, אורביט-לייט",kind:"סיכום",link:""}]},
+       s2b:{notes:"טווח פרמטרים: קוטר טלסקופ 5 עד 10 ס\"מ, הספק 1 עד 5 וואט.",updated:d(3)}}),
+    mk("ept","הנעה חשמלית ללוויינים קטנים","הנעה","עמרי",6,"ok",
+      "מנועי הול ומנועי יונים זעירים שמאפשרים תמרון ושמירת מסלול נמוך לאורך זמן.",
+      "s1b",["s1c","s1d"],
+      [{date:d(5),by:"עמרי",stage:"s1d",text:"חישוב Δv למסלול 350 ק\"מ לחמש שנים. נדרש דחף רציף של כ-20mN."},
+       {date:d(9),by:"עמרי",stage:"s1c",text:"שתי חלופות: מנוע הול על קסנון מול מנוע יונים על יוד."}],
+      {s1b:{osint:"מגמה עולמית של מסלולים נמוכים מאוד (VLEO) לשיפור רזולוציה.",purple:{exists:true,updated:d(40),by:"יואש"}}}),
+    mk("edge","מחשוב קצה ובינה מלאכותית במסלול","עיבוד","מעיין",4,"risk",
+      "עיבוד נתונים על הלוויין עצמו כדי לשדר לקרקע רק את מה שחשוב.",
+      "s1d",["s2a"],
+      [{date:d(16),by:"מעיין",stage:"s2a",text:"התחלנו מיפוי חברות. חסר מידע על עמידות לקרינה של המעבדים."}],
+      {s1b:{osint:"",purple:{exists:false,updated:"",by:""}}}),
+    mk("hsi","חישה היפר-ספקטרלית מלוויינים זעירים","חישה","אמיר",7,"ok",
+      "מצלמות שמפרקות את האור לעשרות פסי צבע וחושפות חומרים. דוגמה פיקטיבית לאבן בניין שהבשילה לפרויקט.",
+      "s3a",["s3b"],
+      [{date:d(2),by:"יואש",stage:"s3b",text:"סטטוס עודכן: התנעה. הפרטים ברשת הסגולה."},
+       {date:d(25),by:"אמיר",stage:"s3a",text:"מסמך המלצה הוגש ברשת הסגולה."}],
+      {s3a:{purple:{exists:true,updated:d(25),by:"אמיר"}},s3b:{purple:{exists:true,updated:d(2),by:"יואש"}},
+       s1b:{purple:{exists:true,updated:d(60),by:"יואש"},osint:"ניתוח תפיסתי מתוך ספרות פתוחה על שימושי חישה היפר-ספקטרלית."}}),
+    mk("ios","שירות ותדלוק במסלול","תשתיות מסלול","עמית",3,"ok",
+      "חלליות שירות שמתדלקות, מתקנות או מזיזות לוויינים קיימים ומאריכות את חייהם.",
+      "s0a",["s0b"],
+      [{date:d(4),by:"עמית",stage:"s0b",text:"מיפינו 6 משימות שירות שבוצעו בעולם מאז 2020."}],{}),
+    mk("qnav","חיישנים קוונטיים לניווט","ניווט","עמרי",3,"stuck",
+      "מדי תאוצה ומגנטומטרים קוונטיים לניווט מדויק בלי תלות בלוויני ניווט.",
+      "s0c",["s1a"],
+      [{date:d(34),by:"עמרי",stage:"s1a",text:"התחלנו לנתח גבולות רגישות. ממתין לחומר מהאקדמיה."}],{})
+  ];
+}
+function freshDB(){return {version:1, phases:JSON.parse(JSON.stringify(DEFAULT_PHASES)), stages:JSON.parse(JSON.stringify(DEFAULT_STAGES)), blocks:sampleBlocks(), sample:true};}
+
+/* ---------- אחסון ---------- */
+let DB;
+/* ---------- שכבת נתונים: מקומי (דפדפן) או ענן (Supabase) ---------- */
+const CFG = window.APP_CONFIG || {};
+const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
+let sb = null;
+function loadLocal(){try{const r=localStorage.getItem(LS_KEY);if(r){DB=JSON.parse(r);return;}}catch(e){}DB=freshDB();}
+function save(){if(CLOUD)return;try{localStorage.setItem(LS_KEY,JSON.stringify(DB));}catch(e){}}
+function report(res){if(res&&res.error){toast("השמירה נכשלה: "+res.error.message);console.error(res.error);}return res;}
+
+async function cloudLoad(){
+  const q=t=>sb.from(t).select("*");
+  const [ph,stg,bl,bs,up]=await Promise.all([q("phases").order("n"),q("stages").order("ord"),q("blocks").order("created_at"),q("block_stages"),q("updates").order("date")]);
+  for(const r of [ph,stg,bl,bs,up]) if(r.error) throw r.error;
+  DB={version:1,sample:false,phases:ph.data,
+    stages:stg.data.map(r=>({id:r.id,phase:r.phase,name:r.name,cls:r.cls,draft:r.draft,question:r.question||"",deliverable:r.deliverable||"",criteria:r.criteria||[],approvals:r.approvals||[],deps:r.deps||[]})),
+    blocks:bl.data.map(r=>({id:r.id,name:r.name,domain:r.domain||"",owner:r.owner||"",trl:r.trl||1,health:r.health,summary:r.summary||"",created:r.created_at,stages:{},log:[]}))};
+  const byId=Object.fromEntries(DB.blocks.map(b=>[b.id,b]));
+  bs.data.forEach(r=>{const b=byId[r.block_id];if(!b)return;b.stages[r.stage_id]={status:r.status,notes:r.notes||"",osint:r.osint||"",materials:r.materials||[],checks:r.checks||{},approvals:r.approvals||{},updated:(r.updated_at||"").slice(0,10),purple:{exists:r.purple_exists,updated:r.purple_updated||"",by:r.purple_by||""}};});
+  up.data.forEach(r=>{const b=byId[r.block_id];if(b)b.log.push({date:r.date,by:r.author,stage:r.stage_id,text:r.body});});
+  DB.blocks.forEach(ensureStages);
+}
+function stageRow(b,sid){const st=b.stages[sid];const c=(stageById(sid)||{}).cls;
+  return {block_id:b.id,stage_id:sid,status:st.status,
+    notes:c==="c"?"":st.notes||"",osint:c==="h"?st.osint||"":"",materials:c==="c"?[]:st.materials||[],
+    checks:st.checks||{},approvals:st.approvals||{},purple_exists:!!st.purple.exists,purple_updated:st.purple.updated||null,purple_by:st.purple.by||null};}
+function persistBlock(b){if(!CLOUD)return save();sb.from("blocks").update({name:b.name,domain:b.domain,owner:b.owner,trl:b.trl,health:b.health,summary:b.summary}).eq("id",b.id).then(report);}
+function persistStage(b,sid){if(!CLOUD)return save();sb.from("block_stages").upsert(stageRow(b,sid)).then(report);}
+function persistLog(b,en){if(!CLOUD)return save();sb.from("updates").insert({block_id:b.id,stage_id:en.stage,author:en.by,body:en.text,date:en.date}).then(report);}
+function persistDelete(id){if(!CLOUD)return save();sb.from("blocks").delete().eq("id",id).then(report);}
+function persistDef(s){if(!CLOUD)return save();sb.from("stages").update({question:s.question,deliverable:s.deliverable,criteria:s.criteria,approvals:s.approvals,deps:s.deps,draft:s.draft}).eq("id",s.id).then(report);}
+async function persistNew(b){if(!CLOUD)return save();
+  const r=report(await sb.from("blocks").insert({id:b.id,name:b.name,domain:b.domain,owner:b.owner,trl:b.trl,health:b.health,summary:b.summary}));if(r.error)return;
+  report(await sb.from("block_stages").insert(DB.stages.map(s=>stageRow(b,s.id))));
+  b.log.forEach(en=>persistLog(b,en));}
+
+function renderLogin(msg){
+  $("#app").innerHTML=`<section class="panel" style="max-width:420px;margin:40px auto;display:grid;gap:12px">
+    <h2>כניסה למערכת</h2><p class="muted" style="margin:0">הגישה פתוחה רק לחברי צוות CTO.</p>
+    ${msg?`<div class="pill bad plain" style="white-space:normal">${esc(msg)}</div>`:""}
+    <form id="loginForm" style="display:grid;gap:10px">
+      <div class="field"><label for="lgEmail">אימייל</label><input id="lgEmail" type="email" autocomplete="username" required style="direction:ltr"></div>
+      <div class="field"><label for="lgPass">סיסמה</label><input id="lgPass" type="password" autocomplete="current-password" required style="direction:ltr"></div>
+      <button class="btn primary" type="submit">כניסה</button>
+    </form></section>`;
+  $("#loginForm").onsubmit=async e=>{e.preventDefault();
+    const {error}=await sb.auth.signInWithPassword({email:$("#lgEmail").value.trim(),password:$("#lgPass").value});
+    if(error)renderLogin("הכניסה נכשלה. בדקו את האימייל והסיסמה.");else startCloud();};
+}
+async function startCloud(){
+  $("#app").innerHTML='<div class="empty">טוען נתונים…</div>';
+  try{await cloudLoad();}catch(e){return renderLogin("טעינת הנתונים נכשלה: "+e.message);}
+  if(!DB.stages.length)return renderLogin("המשתמש מחובר אבל אינו ברשימת הצוות. בקשו ממנהל המערכת להוסיף אתכם.");
+  if(!$("#btnOut")){const o=document.createElement("button");o.className="btn ghost";o.id="btnOut";o.textContent="יציאה";
+    o.onclick=async()=>{await sb.auth.signOut();location.reload();};$(".top-actions").appendChild(o);}
+  route();
+}
+async function boot(){
+  if(!CLOUD){loadLocal();route();return;}
+  sb=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
+  const {data}=await sb.auth.getSession();
+  if(data&&data.session)startCloud();else renderLogin();
+}
+
+/* ---------- עזרים ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const stageById=id=>DB.stages.find(s=>s.id===id);
+const blockById=id=>DB.blocks.find(b=>b.id===id);
+function daysSince(iso){if(!iso)return 999;return Math.floor((TODAY-new Date(iso))/86400000);}
+function lastUpdate(b){return (b.log||[]).map(l=>l.date).sort().pop()||b.created;}
+function currentStage(b){
+  const act=DB.stages.filter(s=>b.stages[s.id]&&b.stages[s.id].status==="active");
+  if(act.length)return act[act.length-1];
+  const done=DB.stages.filter(s=>b.stages[s.id]&&b.stages[s.id].status==="done");
+  return done.length?done[done.length-1]:DB.stages[0];
+}
+function ensureStages(b){DB.stages.forEach(s=>{if(!b.stages[s.id])b.stages[s.id]={status:"todo",notes:"",materials:[],checks:{},approvals:{},updated:"",purple:{exists:false,updated:"",by:""},osint:""};});}
+function fmtDate(iso){if(!iso)return "—";const [y,m,dd]=iso.split("-");return `${dd}.${m}.${y.slice(2)}`;}
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);}
+function healthPill(b){const stale=daysSince(lastUpdate(b))>STALE_DAYS;const h=HEALTH[b.health]||HEALTH.ok;
+  return `<span class="pill ${h[1]}">${h[0]}</span>${stale?` <span class="pill bad plain">לא עודכן ${daysSince(lastUpdate(b))} ימים</span>`:""}`;}
+function trlBar(n){let s='<span class="trl" title="TRL '+n+'">';for(let i=1;i<=9;i++)s+=`<i class="${i<=n?"on":""}"></i>`;return s+`</span> <span class="num">TRL ${n}</span>`;}
+
+/* ---------- ניתוב ---------- */
+let selStage = {}; // blockId -> stageId
+let selMethodStage = "s0a";
+function route(){
+  if(!DB)return;
+  const h=(location.hash||"#dashboard").slice(1);
+  document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on",h===a.dataset.v||(h.startsWith("block-")&&a.dataset.v==="blocks")));
+  if(h.startsWith("block-")&&blockById(h.slice(6)))return renderBlock(h.slice(6));
+  if(h==="blocks")return renderBlocks();
+  if(h==="method")return renderMethod();
+  return renderDashboard();
+}
+window.addEventListener("hashchange",()=>{route();window.scrollTo(0,0);});
+
+/* ---------- תמונת מצב ---------- */
+function renderDashboard(){
+  const B=DB.blocks;
+  const stale=B.filter(b=>daysSince(lastUpdate(b))>STALE_DAYS);
+  const risk=B.filter(b=>b.health!=="ok");
+  const byPhase=DB.phases.map(p=>B.filter(b=>currentStage(b).phase===p.n).length);
+  const feed=B.flatMap(b=>(b.log||[]).map(l=>({...l,b}))).sort((a,c)=>c.date.localeCompare(a.date)).slice(0,8);
+  const phases=DB.phases;
+  let head1="<tr class='ph'><th></th>"+phases.map(p=>{const cnt=DB.stages.filter(s=>s.phase===p.n).length;const c=DB.stages.filter(s=>s.phase===p.n).every(s=>s.cls==="c");return `<th colspan="${cnt}" class="sep ${c?"c":""}">${p.n} · ${esc(p.name)}</th>`}).join("")+"<th></th></tr>";
+  let head2="<tr><th></th>"+DB.stages.map((s,i)=>{const first=i===0||DB.stages[i-1].phase!==s.phase;return `<th class="${first?"sep":""} ${s.cls==="c"?"c":""}">${esc(s.name.split(":")[0])}</th>`}).join("")+"<th>עדכון אחרון</th></tr>";
+  const rows=B.map(b=>{ensureStages(b);return `<tr><td class="name"><a href="#block-${b.id}">${esc(b.name)}</a><small>${esc(b.owner)} · ${healthPill(b)}</small></td>`+
+    DB.stages.map((s,i)=>{const st=b.stages[s.id].status;const first=i===0||DB.stages[i-1].phase!==s.phase;
+      return `<td class="${first?"sep":""}"><div class="cell ${st} ${s.cls==="c"?"cls":""}" title="${esc(s.name)}: ${st==="done"?"הושלם":st==="active"?"בעבודה":"טרם התחיל"}"></div></td>`}).join("")+
+    `<td class="num ${daysSince(lastUpdate(b))>STALE_DAYS?"stale":""}">${fmtDate(lastUpdate(b))}</td></tr>`}).join("");
+  $("#app").innerHTML=`
+  ${DB.sample?`<div class="sample-note">מוצגים נתוני דוגמה פיקטיביים. אפשר למחוק אותם ב"ייבוא / ייצוא".</div>`:""}
+  <section class="kpis">
+    <div class="kpi"><div class="v num">${B.length}</div><div class="l">אבני בניין במעקב</div></div>
+    <div class="kpi"><div class="v num">${B.filter(b=>b.stages.s3b&&b.stages.s3b.status!=="todo").length}</div><div class="l">הבשילו לפרויקט</div></div>
+    <div class="kpi ${risk.length?"alert":""}"><div class="v num">${risk.length}</div><div class="l">בסיכון או תקועות</div></div>
+    <div class="kpi ${stale.length?"alert":""}"><div class="v num">${stale.length}</div><div class="l">לא עודכנו מעל ${STALE_DAYS} ימים</div></div>
+  </section>
+  <section class="panel">
+    <h2>איפה נמצאות אבני הבניין</h2>
+    <div class="funnel">${phases.map((p,i)=>`<div class="fstep ${p.n===3?"c":""}"><div class="n num">${byPhase[i]}</div><div class="t">שלב ${p.n} · ${esc(p.name)}</div></div>`).join("")}</div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h2>מסלול לפי שלבים</h2>
+      <div class="legend"><span><i class="cell done"></i>הושלם</span><span><i class="cell active"></i>בעבודה</span><span><i class="cell"></i>טרם התחיל</span><span><i class="cell cls done"></i>מסווג (סטטוס בלבד)</span></div></div>
+    <div class="matrix-wrap"><table class="matrix"><thead>${head1}${head2}</thead><tbody>${rows}</tbody></table></div>
+  </section>
+  <section class="two">
+    <div class="panel"><h2>עדכונים אחרונים</h2><ul class="feed">${feed.map(f=>`<li><div class="meta"><b>${esc(f.by)}</b> · <a href="#block-${f.b.id}">${esc(f.b.name)}</a> · ${esc((stageById(f.stage)||{}).name||"")} · <span class="num">${fmtDate(f.date)}</span></div><div>${esc(f.text)}</div></li>`).join("")||'<li class="empty">אין עדכונים עדיין.</li>'}</ul></div>
+    <div class="panel"><h2>דורש תשומת לב</h2><ul class="feed">${[...new Set([...stale,...risk])].map(b=>`<li><div><a href="#block-${b.id}"><b>${esc(b.name)}</b></a></div><div class="meta">${esc(b.owner)} · ${healthPill(b)}</div></li>`).join("")||'<li class="empty">הכול בתנועה.</li>'}</ul></div>
+  </section>`;
+}
+
+/* ---------- רשימת אבני בניין ---------- */
+let filt={q:"",owner:"",phase:""};
+function renderBlocks(){
+  const owners=[...new Set(DB.blocks.map(b=>b.owner))];
+  $("#app").innerHTML=`
+  <div class="toolbar">
+    <input id="fq" type="search" placeholder="חיפוש לפי שם או תחום" value="${esc(filt.q)}">
+    <select id="fo"><option value="">כל האחראים</option>${owners.map(o=>`<option ${filt.owner===o?"selected":""}>${esc(o)}</option>`).join("")}</select>
+    <select id="fp"><option value="">כל השלבים</option>${DB.phases.map(p=>`<option value="${p.n}" ${String(filt.phase)===String(p.n)?"selected":""}>שלב ${p.n} · ${esc(p.name)}</option>`).join("")}</select>
+  </div>
+  <div class="cards" id="cards"></div>`;
+  const draw=()=>{
+    const list=DB.blocks.filter(b=>(!filt.q||(b.name+b.domain).includes(filt.q))&&(!filt.owner||b.owner===filt.owner)&&(filt.phase===""||String(currentStage(b).phase)===String(filt.phase)));
+    $("#cards").innerHTML=list.map(b=>{ensureStages(b);const cs=currentStage(b);return `<a class="bcard" href="#block-${b.id}">
+      <div class="row"><span class="pill plain u" style="background:var(--surface-2);color:var(--muted)">${esc(b.domain)}</span>${healthPill(b)}</div>
+      <h3>${esc(b.name)}</h3>
+      <div class="muted" style="font-size:14px">${esc(b.summary)}</div>
+      <div class="minitrack">${DB.stages.map(s=>`<i class="${b.stages[s.id].status} ${s.cls==="c"?"c":""}"></i>`).join("")}</div>
+      <div class="row"><span>שלב ${cs.phase}: <b style="color:var(--fg)">${esc(cs.name)}</b></span></div>
+      <div class="row"><span>${esc(b.owner)}</span><span>·</span>${trlBar(b.trl)}<span>·</span><span class="num">עודכן ${fmtDate(lastUpdate(b))}</span></div>
+    </a>`}).join("")||'<div class="empty">לא נמצאו אבני בניין.</div>';
+  };
+  draw();
+  $("#fq").oninput=e=>{filt.q=e.target.value;draw();};
+  $("#fo").onchange=e=>{filt.owner=e.target.value;draw();};
+  $("#fp").onchange=e=>{filt.phase=e.target.value;draw();};
+}
+
+/* ---------- המתודה ---------- */
+function renderMethod(){
+  const s=stageById(selMethodStage)||DB.stages[0];
+  $("#app").innerHTML=`
+  <section class="panel">
+    <div class="panel-head"><h2>המתודה: ממיפוי ראשוני ועד פרויקט</h2>
+      <div class="legend"><span class="pill u">בלמ"ס</span><span class="pill h">היברידי</span><span class="pill c">מסווג · רשת סגולה</span></div></div>
+    <div class="board">${DB.phases.map(p=>`<div class="brow"><div class="ph"><span class="circ">${p.n}</span>${esc(p.name)}<small>${esc(p.sub||"")}</small></div>
+      <div class="chain">${DB.stages.filter(x=>x.phase===p.n).map((x,i,arr)=>`<button class="node ${x.cls} ${x.id===s.id?"sel":""}" data-s="${x.id}"><b>${esc(x.name)}</b><span class="pill ${x.cls}">${CLS_LABEL[x.cls]}</span></button>${i<arr.length-1?'<span class="arrow" aria-hidden="true">←</span>':""}`).join("")}</div></div>`).join("")}
+    </div>
+  </section>
+  <section class="panel def" id="def"></section>`;
+  document.querySelectorAll(".node").forEach(n=>n.onclick=()=>{selMethodStage=n.dataset.s;renderMethod();});
+  drawDef(s);
+}
+function listOrEmpty(a){return a&&a.length?`<ul>${a.map(x=>`<li>${esc(stageById(x)?("שלב: "+stageById(x).name):x)}</li>`).join("")}</ul>`:'<div class="empty">טרם הוגדר</div>';}
+function drawDef(s){
+  const el=$("#def");
+  const fields=[["question","שאלת המפתח","text"],["deliverable","תוצר נדרש (פורמט אחיד)","text"],["criteria","איך מודדים הצלחה","list"],["approvals","אישורים נדרשים","list"],["deps","תלויות","list"]];
+  el.innerHTML=`<div class="panel-head"><h2>${esc(s.name)}</h2><span class="pill ${s.cls}">${CLS_LABEL[s.cls]}</span></div>
+    ${s.draft?`<div class="draft-tag">הגדרות השלב הן ${D}. לחיצה על "עריכה" משנה אותן לכל המערכת.</div>`:""}
+    ${s.cls==="c"?`<div class="purple-box"><p>זה שלב מסווג. במערכת הבלמ"ס נשמרים רק סטטוס, תאריך עדכון ואחראי. התוכן המלא נכתב ברשת הסגולה.</p></div>`:""}
+    ${s.cls==="h"?`<div class="hybrid-note">שלב היברידי: הניתוח האוסינטי והתפיסתי נשמר כאן. מידע פנים-צה"לי על הצורך נשמר ברשת הסגולה בלבד.</div>`:""}
+    ${fields.map(([k,l,t])=>`<div><h3>${l} <button class="btn sm ghost" data-edit="${k}" data-t="${t}">עריכה</button></h3><div id="f-${k}">${t==="text"?`<div>${esc(s[k])||'<span class="empty">טרם הוגדר</span>'}</div>`:listOrEmpty(s[k])}</div></div>`).join("")}
+    <div><button class="btn sm" id="markFinal">${s.draft?"סמן כהגדרה מאושרת":"החזר לטיוטה"}</button></div>`;
+  el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.edit,t=b.dataset.t,box=$("#f-"+k);
+    const val=t==="text"?s[k]:(s[k]||[]).join("\n");
+    box.innerHTML=`<textarea class="edit" id="ed-${k}" aria-label="עריכה">${esc(val)}</textarea>${t==="list"?'<div class="muted" style="font-size:12px">שורה לכל פריט</div>':""}<div class="addrow"><button class="btn sm primary" id="sv-${k}">שמירה</button><button class="btn sm" id="cn-${k}">ביטול</button></div>`;
+    $("#sv-"+k).onclick=()=>{const v=$("#ed-"+k).value;s[k]=t==="text"?v.trim():v.split("\n").map(x=>x.trim()).filter(Boolean);persistDef(s);drawDef(s);toast("נשמר");};
+    $("#cn-"+k).onclick=()=>drawDef(s);
+  });
+  $("#markFinal").onclick=()=>{s.draft=!s.draft;persistDef(s);drawDef(s);};
+}
+
+/* ---------- דף אבן בניין ---------- */
+function renderBlock(id){
+  const b=blockById(id);ensureStages(b);
+  const sid=selStage[id]||currentStage(b).id;
+  const s=stageById(sid);
+  $("#app").innerHTML=`
+  <section class="bhead">
+    <div class="crumb"><a href="#blocks">אבני בניין</a> / ${esc(b.domain)}</div>
+    <h2>${esc(b.name)}</h2>
+    <div class="muted">${esc(b.summary)}</div>
+    <div class="meta-row">
+      <span>אחראי: <select id="bOwner">${PEOPLE.map(p=>`<option ${p===b.owner?"selected":""}>${p}</option>`).join("")}</select></span>
+      <span>מצב: <select id="bHealth">${Object.entries(HEALTH).map(([k,v])=>`<option value="${k}" ${k===b.health?"selected":""}>${v[0]}</option>`).join("")}</select></span>
+      <span>בשלות: <select id="bTrl">${[1,2,3,4,5,6,7,8,9].map(n=>`<option ${n==b.trl?"selected":""}>${n}</option>`).join("")}</select> ${trlBar(b.trl)}</span>
+      <span class="num">עדכון אחרון: ${fmtDate(lastUpdate(b))}</span>
+      ${daysSince(lastUpdate(b))>STALE_DAYS?`<span class="pill bad plain">לא עודכן ${daysSince(lastUpdate(b))} ימים</span>`:""}
+    </div>
+  </section>
+  <section class="panel">
+    <div class="stepper">${DB.stages.map((x,i)=>`<button class="step ${b.stages[x.id].status} ${x.cls==="c"?"c":""} ${x.id===sid?"sel":""}" data-s="${x.id}"><span class="dot num">${b.stages[x.id].status==="done"?"✓":i+1}</span>${esc(x.name.split(":")[0])}</button>`).join("")}</div>
+  </section>
+  <section class="two">
+    <div class="panel stage-panel" id="stagePanel"></div>
+    <div class="panel">
+      <h2>יומן עדכונים</h2>
+      <div class="field"><label for="logText">עדכון חדש (על השלב "${esc(s.name)}")</label>
+        <textarea id="logText" style="min-height:70px" placeholder="מה התקדם, מה תקוע, מה הצעד הבא"></textarea></div>
+      <div class="addrow"><select id="logBy" aria-label="מי מעדכן">${PEOPLE.map(p=>`<option ${p===b.owner?"selected":""}>${p}</option>`).join("")}</select><button class="btn primary" id="logAdd">הוסף עדכון</button></div>
+      <ul class="feed" style="margin-top:14px">${(b.log||[]).slice().sort((a,c)=>c.date.localeCompare(a.date)).map(l=>`<li><div class="meta"><b>${esc(l.by)}</b> · ${esc((stageById(l.stage)||{}).name||"")} · <span class="num">${fmtDate(l.date)}</span></div><div>${esc(l.text)}</div></li>`).join("")||'<li class="empty">אין עדכונים.</li>'}</ul>
+      <div style="margin-top:12px"><button class="btn sm danger" id="delBlock">מחיקת אבן הבניין</button></div>
+    </div>
+  </section>`;
+  document.querySelectorAll(".step").forEach(n=>n.onclick=()=>{selStage[id]=n.dataset.s;renderBlock(id);});
+  $("#bOwner").onchange=e=>{b.owner=e.target.value;persistBlock(b);};
+  $("#bHealth").onchange=e=>{b.health=e.target.value;persistBlock(b);renderBlock(id);};
+  $("#bTrl").onchange=e=>{b.trl=+e.target.value;persistBlock(b);renderBlock(id);};
+  $("#logAdd").onclick=()=>{const t=$("#logText").value.trim();if(!t)return;b.log=b.log||[];const en={date:TODAY.toISOString().slice(0,10),by:$("#logBy").value,stage:sid,text:t};b.log.push(en);persistLog(b,en);renderBlock(id);toast("העדכון נשמר");};
+  $("#delBlock").onclick=()=>confirmModal(`למחוק את "${b.name}"? אי אפשר לבטל.`,()=>{DB.blocks=DB.blocks.filter(x=>x.id!==id);persistDelete(id);location.hash="#blocks";});
+  drawStage(b,s);
+}
+function statusSel(st){return `<div class="field"><label for="stStatus">סטטוס השלב</label><select id="stStatus">${[["todo","טרם התחיל"],["active","בעבודה"],["done","הושלם"]].map(([k,v])=>`<option value="${k}" ${st.status===k?"selected":""}>${v}</option>`).join("")}</select></div>`;}
+function drawStage(b,s){
+  const st=b.stages[s.id];const el=$("#stagePanel");
+  const touch=()=>{st.updated=TODAY.toISOString().slice(0,10);persistStage(b,s.id);};
+  const head=`<div class="panel-head"><h2>${esc(s.name)}</h2><span class="pill ${s.cls}">${CLS_LABEL[s.cls]}</span></div>
+    <div class="muted">${esc(s.question)}</div>`;
+  if(s.cls==="c"){
+    el.innerHTML=head+`<div class="purple-box">
+      <h3>שלב מסווג: התוכן נמצא ברשת הסגולה</h3>
+      <p>אין להזין כאן תוכן. נשמרים רק הסטטוס, האם קיים מסמך ברשת הסגולה, מתי עודכן ומי אחראי.</p>
+      <div class="grid3">
+        ${statusSel(st)}
+        <div class="field"><label for="pExists">קיים מסמך ברשת הסגולה</label><select id="pExists"><option value="0" ${!st.purple.exists?"selected":""}>לא</option><option value="1" ${st.purple.exists?"selected":""}>כן</option></select></div>
+        <div class="field"><label for="pDate">עודכן שם בתאריך</label><input id="pDate" type="date" value="${esc(st.purple.updated)}"></div>
+        <div class="field"><label for="pBy">אחראי</label><select id="pBy"><option value="">—</option>${PEOPLE.map(p=>`<option ${p===st.purple.by?"selected":""}>${p}</option>`).join("")}</select></div>
+      </div></div>`+approvalsHTML(s,st);
+    $("#pExists").onchange=e=>{st.purple.exists=e.target.value==="1";touch();};
+    $("#pDate").onchange=e=>{st.purple.updated=e.target.value;touch();};
+    $("#pBy").onchange=e=>{st.purple.by=e.target.value;touch();};
+  } else {
+    el.innerHTML=head+`
+      ${s.cls==="h"?`<div class="hybrid-note">שלב היברידי. כאן כותבים רק ניתוח אוסינטי ותפיסתי. מידע פנים-צה"לי על הצורך נשמר ברשת הסגולה.</div>`:""}
+      <div class="grid2">
+        ${statusSel(st)}
+        <div class="field"><label>תוצר נדרש</label><div style="font-size:14px">${esc(s.deliverable)}${s.draft?` <span class="draft-tag">(טיוטה)</span>`:""}</div></div>
+      </div>
+      <div class="field"><label for="stNotes">${s.cls==="h"?"ניתוח אוסינטי ותפיסתי (בלמ\"ס)":"ממצאים ותובנות"}</label><textarea id="stNotes">${esc(s.cls==="h"?st.osint:st.notes)}</textarea></div>
+      ${s.cls==="h"?`<div class="grid2"><div class="field"><label for="pExists">החלק הפנים-צה"לי קיים ברשת הסגולה</label><select id="pExists"><option value="0" ${!st.purple.exists?"selected":""}>לא</option><option value="1" ${st.purple.exists?"selected":""}>כן</option></select></div><div class="field"><label for="pDate">עודכן שם בתאריך</label><input id="pDate" type="date" value="${esc(st.purple.updated)}"></div></div>`:""}
+      <div class="field"><label>חומרים מצורפים</label>
+        <ul class="mats">${st.materials.map((m,i)=>`<li><span class="kind">${esc(m.kind)}</span><span class="t">${m.link?`<a href="${esc(m.link)}" target="_blank" rel="noopener">${esc(m.title)}</a>`:esc(m.title)}</span><button class="btn sm ghost" data-rm="${i}" aria-label="הסרה">✕</button></li>`).join("")||'<li class="empty" style="background:none">אין חומרים עדיין.</li>'}</ul>
+        <div class="addrow"><select id="mKind" aria-label="סוג"><option>מסמך</option><option>מצגת</option><option>גיליון</option><option>סיכום</option><option>מאמר</option><option>קישור</option></select><input id="mTitle" placeholder="שם החומר" aria-label="שם החומר"><input id="mLink" placeholder="קישור או נתיב בתיקייה (לא חובה)" aria-label="קישור"><button class="btn" id="mAdd">צירוף</button></div>
+      </div>
+      <div class="field"><label>מדדי הצלחה</label><ul class="checks">${s.criteria.map((c,i)=>`<li><label><input type="checkbox" data-ck="${i}" ${st.checks[i]?"checked":""}>${esc(c)}</label></li>`).join("")||'<li class="empty">טרם הוגדרו</li>'}</ul></div>
+      ${approvalsHTML(s,st)}
+      ${s.deps&&s.deps.length?`<div class="field"><label>תלויות</label><div style="font-size:14px">${s.deps.map(x=>esc(stageById(x)?stageById(x).name:x)).join(" · ")}</div></div>`:""}`;
+    $("#stNotes").onchange=e=>{if(s.cls==="h")st.osint=e.target.value;else st.notes=e.target.value;touch();toast("נשמר");};
+    if(s.cls==="h"){$("#pExists").onchange=e=>{st.purple.exists=e.target.value==="1";touch();};$("#pDate").onchange=e=>{st.purple.updated=e.target.value;touch();};}
+    el.querySelectorAll("[data-rm]").forEach(x=>x.onclick=()=>{st.materials.splice(+x.dataset.rm,1);touch();drawStage(b,s);});
+    $("#mAdd").onclick=()=>{const t=$("#mTitle").value.trim();if(!t)return;st.materials.push({title:t,kind:$("#mKind").value,link:$("#mLink").value.trim()});touch();drawStage(b,s);};
+    el.querySelectorAll("[data-ck]").forEach(x=>x.onchange=()=>{st.checks[x.dataset.ck]=x.checked;touch();});
+  }
+  $("#stStatus").onchange=e=>{st.status=e.target.value;touch();renderBlock(b.id);};
+  el.querySelectorAll("[data-ap]").forEach(x=>x.onchange=()=>{st.approvals[x.dataset.ap]=x.checked;touch();});
+}
+function approvalsHTML(s,st){return `<div class="field"><label>אישורים</label><ul class="checks">${s.approvals.map((a,i)=>`<li><label><input type="checkbox" data-ap="${i}" ${st.approvals[i]?"checked":""}>אישור ${esc(a)}</label></li>`).join("")||'<li class="empty">טרם הוגדרו</li>'}</ul></div>`;}
+
+/* ---------- חלונות ---------- */
+function modal(html,onMount){const r=$("#modalRoot");r.innerHTML=`<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  const close=()=>r.innerHTML="";r.querySelector(".modal-bg").onclick=e=>{if(e.target.classList.contains("modal-bg"))close();};onMount&&onMount(close);}
+function confirmModal(msg,yes){modal(`<h2>${esc(msg)}</h2><div class="actions"><button class="btn danger" id="cy">כן, למחוק</button><button class="btn" id="cn">ביטול</button></div>`,close=>{$("#cy").onclick=()=>{close();yes();};$("#cn").onclick=close;});}
+
+$("#btnNew").onclick=()=>modal(`<h2>אבן בניין חדשה</h2>
+  <div class="field"><label for="nName">שם</label><input id="nName" placeholder="למשל: מצברים מוצקים לחלל"></div>
+  <div class="field"><label for="nDomain">תחום</label><input id="nDomain" placeholder="למשל: אנרגיה"></div>
+  <div class="field"><label for="nSum">תיאור קצר (בלמ"ס)</label><textarea id="nSum" style="min-height:70px"></textarea></div>
+  <div class="field"><label for="nOwner">אחראי</label><select id="nOwner">${PEOPLE.map(p=>`<option>${p}</option>`).join("")}</select></div>
+  <div class="field"><label for="nTrl">רמת בשלות טכנולוגית (TRL)</label><select id="nTrl">${[1,2,3,4,5,6,7,8,9].map(n=>`<option ${n===3?"selected":""}>${n}</option>`).join("")}</select></div>
+  <div class="actions"><button class="btn primary" id="nSave">יצירה</button><button class="btn" id="nCancel">ביטול</button></div>`,close=>{
+    $("#nCancel").onclick=close;
+    $("#nSave").onclick=()=>{const name=$("#nName").value.trim();if(!name){$("#nName").focus();return;}
+      const id="b"+Date.now().toString(36);
+      const b={id,name,domain:$("#nDomain").value.trim()||"כללי",owner:$("#nOwner").value,trl:+$("#nTrl").value,health:"ok",summary:$("#nSum").value.trim(),created:TODAY.toISOString().slice(0,10),stages:{},log:[{date:TODAY.toISOString().slice(0,10),by:$("#nOwner").value,stage:DB.stages[0].id,text:"אבן הבניין נפתחה."}]};
+      ensureStages(b);b.stages[DB.stages[0].id].status="active";DB.blocks.push(b);persistNew(b);close();location.hash="#block-"+id;toast("נוצרה אבן בניין");};
+  });
+
+$("#btnData").onclick=()=>modal(`<h2>ייבוא וייצוא נתונים</h2>
+  <p class="muted" style="margin:0">${CLOUD?"הנתונים נשמרים במסד הנתונים המשותף. כאן אפשר להעתיק גיבוי שלהם.":"הנתונים נשמרים בדפדפן הזה בלבד. כדי לגבות או להעביר למחשב אחר, העתיקו את הטקסט ושמרו אותו כקובץ."}</p>
+  <div class="field"><label for="ioText">נתוני המערכת (JSON)</label><textarea id="ioText" style="min-height:180px;font-family:monospace;font-size:12px;direction:ltr">${esc(JSON.stringify(DB))}</textarea></div>
+  <div class="actions" style="flex-wrap:wrap"><button class="btn primary" id="ioCopy">העתקה</button>${CLOUD?"":`<button class="btn" id="ioLoad">טעינה מהטקסט</button><button class="btn" id="ioSample">טעינת נתוני דוגמה</button><button class="btn danger" id="ioClear">התחלה נקייה</button>`}</div>`,close=>{
+    $("#ioCopy").onclick=()=>{const t=$("#ioText");navigator.clipboard&&navigator.clipboard.writeText(t.value).then(()=>toast("הועתק"),()=>{t.select();toast("סמנו והעתיקו ידנית");});if(!navigator.clipboard){t.select();}};
+    if(!CLOUD){$("#ioLoad").onclick=()=>{try{const x=JSON.parse($("#ioText").value);if(!x.blocks||!x.stages)throw 0;DB=x;save();close();route();toast("הנתונים נטענו");}catch(e){toast("הטקסט אינו קובץ נתונים תקין");}};
+    $("#ioSample").onclick=()=>{DB=freshDB();save();close();route();toast("נתוני הדוגמה נטענו");};
+    $("#ioClear").onclick=()=>{DB=freshDB();DB.blocks=[];DB.sample=false;save();close();route();toast("המערכת ריקה. אפשר להתחיל");};}
+  });
+
+boot();
+})();
+</script>
+</body></html>
