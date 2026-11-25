@@ -85,7 +85,7 @@ create index if not exists updates_block_idx on updates(block_id, date desc);
 
 -- ---------- הגנת סיווג: אין תוכן בשלבים מסווגים ----------
 create or replace function guard_classified() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = public as $$
 declare c text;
 begin
   select cls into c from stages where id = new.stage_id;
@@ -104,7 +104,7 @@ drop trigger if exists trg_guard_classified on block_stages;
 create trigger trg_guard_classified before insert or update on block_stages
   for each row execute function guard_classified();
 
-create or replace function touch_updated() returns trigger language plpgsql as $$
+create or replace function touch_updated() returns trigger language plpgsql set search_path = public as $$
 begin new.updated_at := now(); return new; end $$;
 drop trigger if exists trg_touch_blocks on blocks;
 create trigger trg_touch_blocks before update on blocks for each row execute function touch_updated();
@@ -132,3 +132,9 @@ end $$;
 
 drop policy if exists team_read on team_members;
 create policy team_read on team_members for select to authenticated using (is_team_member());
+
+-- פונקציות העזר נדרשות רק למשתמשים מחוברים
+revoke execute on function public.is_team_member() from public, anon;
+revoke execute on function public.is_team_editor() from public, anon;
+grant execute on function public.is_team_member() to authenticated;
+grant execute on function public.is_team_editor() to authenticated;
